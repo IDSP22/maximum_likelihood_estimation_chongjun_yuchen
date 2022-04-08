@@ -72,6 +72,7 @@ ui <- list(
         menuItem("Overview", tabName = "overview", icon = icon("tachometer-alt")),
         menuItem("Prerequisites", tabName = "prerequisites", icon = icon("book")),
         menuItem("Explore", tabName = "explore", icon = icon("wpexplorer")),
+        menuItem("Calculation", tabName = "calculation", icon = icon("book")),
         menuItem("Escape Room", tabName = "game", icon = icon("gamepad")),
         menuItem("References", tabName = "references", icon = icon("leanpub"))
       ),
@@ -133,13 +134,25 @@ ui <- list(
             div(class = "updated", "Last Update: 12/7/2021 by NJH.")
           )
         ),
-        ### Prerequisites Page ----
+         ### Prerequisites Page ----
         tabItem(
           tabName = "prerequisites",
           withMathJax(),
           h2("Background"),
           p("In order to get the most out of this app, please review the
             following:"),
+          box(
+            title = strong("What is a likelihood function?"),
+            status = "primary",
+            collapsible = TRUE,
+            collapsed = FALSE,
+            width = '100%',
+            "Assuming we have n samples \\(y_1,y_2,...,y_N\\) that come from a 
+            distribution with some parameters \\(\\theta\\) with the pmf or pdf 
+            of the distribution \\(f\\left(y_i\\big|\\theta\\right)\\) then the 
+            likelihood function is \\[L(\\theta) = \\prod^{N}_{i=1}f\\left
+            (y_i\\big|\\theta\\right)\\]" 
+          ),
           box(
             title = strong("What is maximum likelihood estimation?"),
             status = "primary",
@@ -167,12 +180,17 @@ ui <- list(
               tags$li("Exploiting the fact that the data are identically and
                       independently distributed ('i.i.d.'), you can construct a
                       likelihood function: \\[L(\\theta) = \\prod^{N}_{i=1}
-                      f\\left(y_i\\big|\\theta\\right)\\\\log(L(\\theta)) =
+                      f\\left(y_i\\big|\\theta\\right)\\] and then we take the
+                       log of the likelihood function and maximize the log-likelihood function: 
+                      \\[\\log(L(\\theta)) =
                       \\sum^{N}_{i=1} log \\left(f\\left(y_i \\big|\\theta
-                      \\right)\\right)\\]"),
+                      \\right)\\right)\\] The reason of using log transformation 
+                      is that it transform the product into a summation, which is
+                      easier to find the optimization."),
               tags$li("We use optimization techniques either by hand or using
                       software such as R to find the value of \\(\\theta\\) which
-                      maximizes the function.")
+                      maximizes the function. You would see same examples in the
+                       'explore' tab")
             )
           ),
           box(
@@ -197,6 +215,16 @@ ui <- list(
               and \\(\\widehat{\\theta}\\) is the MLE of \\(\\theta\\), then
               \\[\\sqrt{n} \\left(\\widehat{\\theta} - \\theta\\right)
               \\rightarrow N\\left(0,\\frac{1}{I(\\theta)}\\right)\\]")
+          ),
+          box(
+            title = strong("Why we need Invariance Property and Large Sample Property"),
+            status = "primary",
+            collapsible = TRUE,
+            collapsed = TRUE,
+            width = '100%',
+            p("We need the Invariance Property so the large sample property would apply. 
+              The large sample property says, when the sample size is large enought,
+              the difference between MLE and true parameter would converge to 0.")
           ),
           div(
             style = "text-align: center;",
@@ -254,7 +282,8 @@ ui <- list(
                       max = 100,
                       step = 1,
                       value = 1
-                    )
+                    ),
+                    textOutput("text")
                   )
                 ),
                 column(
@@ -271,12 +300,18 @@ ui <- list(
                   )),
                   plotOutput("oneParamPlot"),
                   br(),
-                  p("The blue curve represents the log-likelihood function at each
+                  tags$ol(
+                    tags$li("The blue curve represents the log-likelihood function at each
                     possible value of the parameter (\\(\\lambda\\)) on the
-                    horizontal axis, given a data collection. The solid green
-                    vertical line represents the true value of the parameter
-                    while the dashed black vertical line represents the estimate
-                    based on the sample data.")
+                    horizontal axis, given a data collection.)"),
+                    tags$li("The solid green
+                    vertical line represents the true value of the parameter"),
+                    tags$li("The dashed black vertical line represents the estimate
+                    based on the sample data"),
+                    tags$li("The reason of plot both MLE and true parameter on 
+                            likelihood function is that we want to show you the 
+                            MLE is really close to the true parameter!")
+                  )
                 )
               )
             )
@@ -365,6 +400,39 @@ ui <- list(
           ),
           br(),
           br(),
+          div(
+            style = "text-align: center;",
+            bsButton(
+              inputId = "go4",
+              label = "Calculation",
+              size = "large",
+              icon = icon("book"),
+              style = "default"
+            )
+          )
+        ),
+                ### Calculate MLE by hand Page ----
+        tabItem(
+          tabName = "calculation",
+          withMathJax(),
+          h2("Calculation By Hand"),
+          p("Here are two examples of calculating MLE of simulated data from Poisson distribution and Exponential distribution:"),
+          box(
+            title = strong("Poisson Distribution"),
+            status = "primary",
+            collapsible = TRUE,
+            collapsed = FALSE,
+            width = '100%',
+            img(src = "poisson.jpeg", height = 400, width = 500)),
+
+          box(
+            title = strong("Exponential distribution"),
+            status = "primary",
+            collapsible = TRUE,
+            collapsed = FALSE,
+            width = '100%',
+            img(src = "exponential.jpeg", height = 400, width = 500)
+          ),
           div(
             style = "text-align: center;",
             bsButton(
@@ -575,6 +643,17 @@ server <- function(input, output, session) {
       )
     }
   )
+  
+    observeEvent(
+    eventExpr = input$go4,
+    handlerExpr = {
+      updateTabItems(
+        session = session,
+        inputId = "pages",
+        selected = "calculation"
+      )
+    }
+  )
 
   ## Explore Page Code ----
   oneParamData <- reactiveVal(0)
@@ -654,6 +733,14 @@ server <- function(input, output, session) {
             vertical line shows the true value of the parameter from the slider.")
     )
   )
+  output$text <- renderText({ 
+    paste0('The difference between MLE and true parameter is ',
+           input$singleParameter- ifelse(
+             input$oneParamDist == "Poisson Distribution",
+             yes = mean(oneParamData()),
+             no = 1/mean(oneParamData())
+           )) 
+  })
 
   ### Two parameter case ----
   ### Currently only for gamma distribution
