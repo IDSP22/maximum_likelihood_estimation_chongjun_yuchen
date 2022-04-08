@@ -8,6 +8,6 @@ We added explanation in the simple MLE procedure.
 We explain why the Invariance property and Large Sample Property are necessary in the usage of MLE.
 ## 2. Explore (plots)
 We added the mathematical expressions of optimization of log-likelihood functions for samples from Poisson distribution and exponential distribution.  
-We added maximum likehood estimation for the binomial distribution into the tab of "two parameters". 
+We added maximum likehood estimation for the binomial distribution into the tab of "two parameters".
 We suggest the users to choose a large sample size so the Large Sample Property would apply.  
 We removed the two parameters log-likelihood plot since it is a little bit confusing.
