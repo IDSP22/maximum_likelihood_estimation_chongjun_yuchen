@@ -238,6 +238,7 @@ ui <- list(
                         "Exponential Distribution"
                       )
                     ),
+                    helpText("Parameters for the Log Likelihood Function "),
                     sliderInput(
                       inputId = "oneParamSize",
                       label = "Set sample size",
@@ -259,7 +260,17 @@ ui <- list(
                 column(
                   width = 8,
                   offset = 0,
+                  wellPanel(
+                    h3("Log Likelihood Function"),
+                  withMathJax(p("In practice, it is usually easier to find the MLE by maximizing the ", em("log likelihood function"), 
+                                " instead of the likelihood function. Since the log transformation is monotone, 
+                                the two functions achieve their maximum in the same place. The log likelihood function for this example is
+                                $$ log(L(\\theta)) = \\sum^{N}_{i=1} log\\left(f\\left(y_i\\big|\\theta \\right)\\right)\\ $$
+                                The concept of maximum likelihood is very general.Maximum likelihood is used to estimate parameters for a wide variety of distributions"
+                                
+                  )),
                   plotOutput("oneParamPlot"),
+                  br(),
                   p("The blue curve represents the log-likelihood function at each
                     possible value of the parameter (\\(\\lambda\\)) on the
                     horizontal axis, given a data collection. The solid green
@@ -268,7 +279,8 @@ ui <- list(
                     based on the sample data.")
                 )
               )
-            ),
+            )
+          ),
             #### Two parameter tab ----
             tabPanel(
               title = "Two parameters",
